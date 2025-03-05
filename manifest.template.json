@@ -1,0 +1,28 @@
+{
+  "name": "LC Auto TickTick Checker",
+  "description": "Automatically check your task named Leetcode Daily on TickTick",
+  "version": "1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "assets/icon.png"
+  },
+  "permissions": ["identity", "storage", "scripting"],
+  "host_permissions": ["https://leetcode.com/problems/*"],
+  "background": {
+    "service_worker": "service_worker.js"
+  },
+  "oauth2": {
+    "client_id": "__CLIENT_ID__",
+    "client_secret": "__CLIENT_SECRET__",
+    "scopes": ["tasks:read", "tasks:write"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://leetcode.com/problems/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "ticktickProjectId": "__TICK_TICK_PROJECT_ID__"
+}

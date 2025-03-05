@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OAuth Popup</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        width: 300px;
+        padding: 20px;
+      }
+      button {
+        padding: 10px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 10px;
+      }
+      #token,
+      #code {
+        word-break: break-all;
+        background: #f5f5f5;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      input {
+        width: 100%;
+        padding: 8px;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Auth</h2>
+    <button id="login">Get Authentication Code</button>
+    <h3>Auth Code:</h3>
+    <div id="code">Loading...</div>
+    <h3>Enter Access Token:</h3>
+    <input type="text" id="accessTokenInput" placeholder="Enter Code..." />
+    <script src="popup.js"></script>
+    <h3>Access Token:</h3>
+    <div id="token">Loading...</div>
+    <script src="popup.js"></script>
+  </body>
+</html>
