@@ -23,6 +23,5 @@
       "js": ["content.js"],
       "run_at": "document_idle"
     }
-  ],
-  "ticktickProjectId": "__TICK_TICK_PROJECT_ID__"
+  ]
 }

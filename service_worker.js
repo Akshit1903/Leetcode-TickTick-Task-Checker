@@ -1,7 +1,7 @@
 const AUTHORIZATION_CODE = "AUTHORIZATION_CODE";
 const ACCESS_TOKEN = "ACCESS_TOKEN";
 let accessToken = "";
-const projectId = chrome.runtime.getManifest().ticktickProjectId;
+const projectId = "66b3db7ac71c7100000000cd";
 const leetcodeTaskTitle = "Leetcode Daily";
 
 async function parseReadableStream(response) {
@@ -133,7 +133,6 @@ async function isLeetCodeQuestionDone() {
 }
 
 chrome.storage.local.get("access_token", async (data) => {
-  console.log(await isLeetCodeQuestionDone());
   accessToken = "Bearer " + data.access_token;
   console.log("✅ Service Worker Loaded & Listening...");
   chrome.runtime.onMessage.addListener(
