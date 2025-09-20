@@ -34,7 +34,7 @@ function observeSubmitButton() {
 const AUTHORIZATION_CODE = "AUTHORIZATION_CODE";
 const ACCESS_TOKEN = "ACCESS_TOKEN";
 let accessToken = "";
-const projectId = "66b3db7ac71c7100000000cd";
+const projectId = "66ee25eceba6f70000000163";
 const leetcodeTaskTitle = "Leetcode Daily";
 
 async function parseReadableStream(response) {
@@ -52,7 +52,7 @@ async function parseReadableStream(response) {
   return JSON.parse(res);
 }
 
-async function maskTaskAsCompleted(taskId) {
+async function markTaskAsCompleted(taskId) {
   const myHeaders = new Headers();
   myHeaders.append("Authorization", accessToken);
 
@@ -116,50 +116,137 @@ async function getLeetCodeTask() {
 
 async function markLeetCodeDailyTaskDone() {
   const leetcodeTask = await getLeetCodeTask();
-  return await maskTaskAsCompleted(leetcodeTask.id);
+  return await markTaskAsCompleted(leetcodeTask.id);
 }
 
 async function getDailyQuestionDetails() {
-  const requestOptions = {
-    method: "GET",
-    redirect: "follow",
-  };
-  try {
-    const response = await fetch(
-      "https://alfa-leetcode-api.onrender.com/daily",
-      requestOptions
-    );
-    return await parseReadableStream(response);
-  } catch (e) {
-    console.log(e);
-  }
+  const query = `
+  query getDailyProblem {
+    activeDailyCodingChallengeQuestion {
+        date
+        link
+        question {
+            questionId
+            questionFrontendId
+            boundTopicId
+            title
+            titleSlug
+            content
+            translatedTitle
+            translatedContent
+            isPaidOnly
+            difficulty
+            likes
+            dislikes
+            isLiked
+            similarQuestions
+            exampleTestcases
+            contributors {
+                username
+                profileUrl
+                avatarUrl
+            }
+            topicTags {
+                name
+                slug
+                translatedName
+            }
+            companyTagStats
+            codeSnippets {
+                lang
+                langSlug
+                code
+            }
+            stats
+            hints
+            solution {
+                id
+                canSeeDetail
+                paidOnly
+                hasVideoSolution
+                paidOnlyVideo
+            }
+            status
+            sampleTestCase
+            metaData
+            judgerAvailable
+            judgeType
+            mysqlSchemas
+            enableRunCode
+            enableTestMode
+            enableDebugger
+            envInfo
+            libraryUrl
+            adminUrl
+            challengeQuestion {
+                id
+                date
+                incompleteChallengeCount
+                streakCount
+                type
+            }
+            note
+        }
+    }
+}`;
+  const response = await fetch("https://leetcode.com/graphql", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Referer: "https://leetcode.com",
+    },
+    body: JSON.stringify({
+      query,
+      variables: {}, // No variables needed for this query
+    }),
+  });
+
+  const result = await response.json();
+  return result["data"]["activeDailyCodingChallengeQuestion"];
+}
+
+async function getRecentSubmissions(username, limit) {
+  const query = `
+query getRecentSubmissions($username: String!, $limit: Int) {
+    recentSubmissionList(username: $username, limit: $limit) {
+        title
+        titleSlug
+        timestamp
+        statusDisplay
+        lang
+    }
+}`;
+  const response = await fetch("https://leetcode.com/graphql", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Referer: "https://leetcode.com",
+    },
+    body: JSON.stringify({
+      query,
+      variables: {
+        username,
+        limit,
+      },
+    }),
+  });
+
+  const result = await response.json();
+  return result.data;
 }
 
 async function getLastSubmission() {
-  const requestOptions = {
-    method: "GET",
-    redirect: "follow",
-  };
-
-  try {
-    const response = await fetch(
-      "https://alfa-leetcode-api.onrender.com/akshit19/submission?limit=1",
-      requestOptions
-    );
-    return await parseReadableStream(response);
-  } catch (e) {
-    console.log(e);
-  }
+  return await getRecentSubmissions("akshit19", 1);
 }
 
 async function isLeetCodeQuestionDone() {
   const dailyQuestionDetails = await getDailyQuestionDetails();
   let lastSubmission = await getLastSubmission();
-  lastSubmission = lastSubmission.submission[0];
+  lastSubmission = lastSubmission.recentSubmissionList[0];
   console.log("Last Submission Status:", lastSubmission.statusDisplay);
 
   return (
-    dailyQuestionDetails.titleSlug === lastSubmission.titleSlug &&
+    dailyQuestionDetails.question.titleSlug === lastSubmission.titleSlug &&
     (lastSubmission.statusDisplay === "Accepted" ||
       lastSubmission.statusDisplay === "Internal Error")
   );
