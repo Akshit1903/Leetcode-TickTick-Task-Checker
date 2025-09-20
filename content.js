@@ -247,8 +247,7 @@ async function isLeetCodeQuestionDone() {
 
   return (
     dailyQuestionDetails.question.titleSlug === lastSubmission.titleSlug &&
-    (lastSubmission.statusDisplay === "Accepted" ||
-      lastSubmission.statusDisplay === "Internal Error")
+    lastSubmission.statusDisplay === "Accepted"
   );
 }
 
