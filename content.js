@@ -1,6 +1,6 @@
 function observeSubmitButton() {
   const button = document.querySelector(
-    '[data-e2e-locator="console-submit-button"]'
+    '[data-e2e-locator="console-submit-button"]',
     // '[data-e2e-locator="console-run-button"]'
   );
 
@@ -31,9 +31,12 @@ function observeSubmitButton() {
   });
 }
 
-const AUTHORIZATION_CODE = "AUTHORIZATION_CODE";
-const ACCESS_TOKEN = "ACCESS_TOKEN";
-let accessToken = "";
+const TICK_TICK_AUTHORIZATION_CODE_KEY = "ticktick_authorization_code";
+const TICK_TICK_ACCESS_TOKEN_KEY = "TICK_TICK_ACCESS_TOKEN";
+const TODOIST_ACCESS_TOKEN_KEY = "TODOIST_ACCESS_TOKEN";
+
+let ticktickAccessToken = "";
+let todoistAccessToken = "";
 const projectId = "66ee25eceba6f70000000163";
 const leetcodeTaskTitle = "Leetcode Daily";
 
@@ -52,9 +55,9 @@ async function parseReadableStream(response) {
   return JSON.parse(res);
 }
 
-async function markTaskAsCompleted(taskId) {
+async function markTickTickTaskAsCompleted(taskId) {
   const myHeaders = new Headers();
-  myHeaders.append("Authorization", accessToken);
+  myHeaders.append("Authorization", ticktickAccessToken);
 
   const requestOptions = {
     method: "POST",
@@ -64,16 +67,75 @@ async function markTaskAsCompleted(taskId) {
   try {
     return await fetch(
       `https://api.ticktick.com/open/v1/project/${projectId}/task/${taskId}/complete`,
-      requestOptions
+      requestOptions,
     );
   } catch (e) {
     console.log(e);
   }
 }
 
-async function getProjectDetails() {
+async function markTodoistTaskAsCompleted(taskId) {
   const myHeaders = new Headers();
-  myHeaders.append("Authorization", accessToken);
+  myHeaders.append("Authorization", todoistAccessToken);
+
+  const requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    redirect: "follow",
+  };
+
+  try {
+    const response = await fetch(
+      `https://api.todoist.com/api/v1/tasks/${taskId}/close`,
+      requestOptions,
+    );
+
+    return await parseReadableStream(response);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function getFormattedTodaysDate() {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return formatter.format(new Date());
+}
+
+async function markDueDateOfTodoistTaskAsToday(taskId) {
+  const myHeaders = new Headers();
+  myHeaders.append("Authorization", todoistAccessToken);
+  myHeaders.append("Content-Type", "application/json");
+
+  const today = getFormattedTodaysDate();
+  const body = {
+    due_string: `${today}, Everyday`,
+  };
+  const requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    redirect: "follow",
+    body: JSON.stringify(body),
+  };
+
+  try {
+    const response = await fetch(
+      `https://api.todoist.com/api/v1/tasks/${taskId}`,
+      requestOptions,
+    );
+    return await parseReadableStream(response);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function getTickTickTasks() {
+  const myHeaders = new Headers();
+  myHeaders.append("Authorization", ticktickAccessToken);
 
   const requestOptions = {
     method: "GET",
@@ -84,7 +146,7 @@ async function getProjectDetails() {
   try {
     const response = await fetch(
       `https://api.ticktick.com/open/v1/project/${projectId}/data`,
-      requestOptions
+      requestOptions,
     );
 
     return await parseReadableStream(response);
@@ -93,8 +155,30 @@ async function getProjectDetails() {
   }
 }
 
-async function getLeetCodeTask() {
-  const projectDetails = await getProjectDetails();
+async function getAllTodoIstStudyTasks() {
+  const myHeaders = new Headers();
+  myHeaders.append("Authorization", todoistAccessToken);
+
+  const requestOptions = {
+    method: "GET",
+    headers: myHeaders,
+    redirect: "follow",
+  };
+
+  try {
+    const response = await fetch(
+      `https://api.todoist.com/api/v1/tasks?project_id=6fx7VP9x6M6Jvv62`,
+      requestOptions,
+    );
+    const resJson = await parseReadableStream(response);
+    return resJson["results"];
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function getLeetCodeTickTickTask() {
+  const projectDetails = await getTickTickTasks();
 
   let res = {};
   const currTime = new Date().getTime();
@@ -114,9 +198,64 @@ async function getLeetCodeTask() {
   return res;
 }
 
+async function getLeetCodeTodoIstTask() {
+  const allStudyTasks = await getAllTodoIstStudyTasks();
+  for (const task of allStudyTasks) {
+    if (task.content === "Leetcode Daily") {
+      return task;
+    }
+  }
+}
+
+const isLateNight = () => {
+  // Get current time in India (IST) as a string
+  const indiaTimeStr = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date());
+
+  // Convert "HH:mm" to a numerical value for easy comparison
+  // Example: "05:15" becomes 5.25 or just use string comparison for simplicity
+  const [hours, minutes] = indiaTimeStr.split(":").map(Number);
+  const totalMinutes = hours * 60 + minutes;
+
+  const start = 0; // 12:00 AM in minutes
+  const end = 5 * 60 + 30; // 05:30 AM in minutes
+
+  return totalMinutes >= start && totalMinutes <= end;
+};
+
+async function getFormattedYesterdaysDate() {
+  const today = new Date();
+  // Subtract 24 hours worth of milliseconds
+  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  return formatter.format(yesterday);
+}
+
 async function markLeetCodeDailyTaskDone() {
-  const leetcodeTask = await getLeetCodeTask();
-  return await markTaskAsCompleted(leetcodeTask.id);
+  // TickTick Logic
+  const tickTickLeetcodeTask = await getLeetCodeTickTickTask();
+  await markTickTickTaskAsCompleted(tickTickLeetcodeTask.id);
+
+  // TodoIst Logic
+  const todoistLeetcodeTask = await getLeetCodeTodoIstTask();
+  const taskDueDate = todoistLeetcodeTask.due.date;
+
+  if (isLateNight() && taskDueDate === (await getFormattedYesterdaysDate())) {
+    await markDueDateOfTodoistTaskAsToday(todoistLeetcodeTask.id);
+  } else if (taskDueDate === (await getFormattedTodaysDate())) {
+    await markTodoistTaskAsCompleted(todoistLeetcodeTask.id);
+  }
 }
 
 async function getDailyQuestionDetails() {
@@ -262,7 +401,11 @@ let triggerWorkflow = async (message, sender, sendResponse) => {
   }
 };
 
-chrome.storage.local.get("access_token", async (data) => {
-  accessToken = "Bearer " + data.access_token;
-  observeSubmitButton();
-});
+chrome.storage.local.get(
+  [TICK_TICK_ACCESS_TOKEN_KEY, TODOIST_ACCESS_TOKEN_KEY],
+  async (data) => {
+    ticktickAccessToken = "Bearer " + data[TICK_TICK_ACCESS_TOKEN_KEY];
+    todoistAccessToken = "Bearer " + data[TODOIST_ACCESS_TOKEN_KEY];
+    observeSubmitButton();
+  },
+);

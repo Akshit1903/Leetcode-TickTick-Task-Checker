@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -33,13 +33,24 @@
   <body>
     <h2>Auth</h2>
     <button id="login">Get Authentication Code</button>
-    <h3>Auth Code:</h3>
+    <h3>TickTick Auth Code:</h3>
     <div id="code">Loading...</div>
-    <h3>Enter Access Token:</h3>
-    <input type="text" id="accessTokenInput" placeholder="Enter Code..." />
-    <script src="popup.js"></script>
-    <h3>Access Token:</h3>
-    <div id="token">Loading...</div>
+    <h3>Enter TickTick Access Token:</h3>
+    <input
+      type="text"
+      id="ticktickAccessTokenInput"
+      placeholder="Enter Code..."
+    />
+    <h3>Tick Tick Access Token:</h3>
+    <div id="ticktick_token">Loading...</div>
+    <h3>Enter TodoIst Access Token:</h3>
+    <input
+      type="text"
+      id="todoistAccessTokenInput"
+      placeholder="Enter Code..."
+    />
+    <h3>TodoIst Access Token:</h3>
+    <div id="todoist_token">Loading...</div>
     <script src="popup.js"></script>
   </body>
 </html>
