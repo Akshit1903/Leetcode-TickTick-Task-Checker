@@ -1,7 +1,7 @@
 function observeSubmitButton() {
   const button = document.querySelector(
     '[data-e2e-locator="console-submit-button"]',
-    // '[data-e2e-locator="console-run-button"]'
+    // '[data-e2e-locator="console-run-button"]',
   );
 
   if (button) {
@@ -18,14 +18,6 @@ function observeSubmitButton() {
   document.addEventListener("keydown", async (event) => {
     if (event.ctrlKey && event.key === "Enter") {
       console.log("🚀 Ctrl + Enter detected!");
-
-      // Send a message to the service worker
-      // chrome.runtime.sendMessage(
-      //   { action: "leetcode_submit_clicked" },
-      //   (response) => {
-      //     console.log("✅ Message sent successfully!");
-      //   }
-      // );
       await triggerWorkflow();
     }
   });
@@ -244,8 +236,8 @@ async function getFormattedYesterdaysDate() {
 
 async function markLeetCodeDailyTaskDone() {
   // TickTick Logic
-  const tickTickLeetcodeTask = await getLeetCodeTickTickTask();
-  await markTickTickTaskAsCompleted(tickTickLeetcodeTask.id);
+  // const tickTickLeetcodeTask = await getLeetCodeTickTickTask();
+  // await markTickTickTaskAsCompleted(tickTickLeetcodeTask.id);
 
   // TodoIst Logic
   const todoistLeetcodeTask = await getLeetCodeTodoIstTask();
