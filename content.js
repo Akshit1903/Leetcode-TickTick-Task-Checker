@@ -82,9 +82,9 @@ async function markTodoistTaskAsCompleted(taskId) {
       requestOptions,
     );
 
-    return await parseReadableStream(response);
+    return response;
   } catch (e) {
-    console.error(e);
+    return e;
   }
 }
 
@@ -103,7 +103,7 @@ async function markDueDateOfTodoistTaskAsToday(taskId) {
   myHeaders.append("Authorization", todoistAccessToken);
   myHeaders.append("Content-Type", "application/json");
 
-  const today = getFormattedTodaysDate();
+  const today = await getFormattedTodaysDate();
   const body = {
     due_string: `${today}, Everyday`,
   };
@@ -241,12 +241,32 @@ async function markLeetCodeDailyTaskDone() {
 
   // TodoIst Logic
   const todoistLeetcodeTask = await getLeetCodeTodoIstTask();
-  const taskDueDate = todoistLeetcodeTask.due.date;
+  console.log(todoistLeetcodeTask);
+
+  const taskDueDate = todoistLeetcodeTask?.due?.date;
+
+  console.log(isLateNight());
+  console.log(taskDueDate === (await getFormattedYesterdaysDate()));
 
   if (isLateNight() && taskDueDate === (await getFormattedYesterdaysDate())) {
-    await markDueDateOfTodoistTaskAsToday(todoistLeetcodeTask.id);
+    const responseBody = await markDueDateOfTodoistTaskAsToday(
+      todoistLeetcodeTask.id,
+    );
+    console.log(responseBody);
   } else if (taskDueDate === (await getFormattedTodaysDate())) {
-    await markTodoistTaskAsCompleted(todoistLeetcodeTask.id);
+    const responseBody = await markTodoistTaskAsCompleted(
+      todoistLeetcodeTask.id,
+    );
+    const responseStatus = responseBody.status;
+    if (responseStatus === 204) {
+      console.log("Updation Successful");
+    } else if (responseStatus === 400) {
+      console.log("Error Occured from TodoIst");
+      console.error(responseStatus);
+    } else {
+      console.log("Case Misunderstood");
+      console.log(responseBody);
+    }
   }
 }
 
