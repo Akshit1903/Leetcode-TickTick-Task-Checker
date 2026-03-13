@@ -248,12 +248,12 @@ async function markLeetCodeDailyTaskDone() {
   console.log(isLateNight());
   console.log(taskDueDate === (await getFormattedYesterdaysDate()));
 
-  if (isLateNight() && taskDueDate === (await getFormattedYesterdaysDate())) {
+  if (isLateNight()) {
     const responseBody = await markDueDateOfTodoistTaskAsToday(
       todoistLeetcodeTask.id,
     );
     console.log(responseBody);
-  } else if (taskDueDate === (await getFormattedTodaysDate())) {
+  } else {
     const responseBody = await markTodoistTaskAsCompleted(
       todoistLeetcodeTask.id,
     );
