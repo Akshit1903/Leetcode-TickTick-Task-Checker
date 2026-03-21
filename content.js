@@ -98,14 +98,25 @@ async function getFormattedTodaysDate() {
   return formatter.format(new Date());
 }
 
-async function markDueDateOfTodoistTaskAsToday(taskId) {
+async function getFormattedTomorrowsDate() {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const now = new Date();
+  now.setDate(now.getDate() + 1);
+  return formatter.format(now);
+}
+
+async function markDueDateOfTodoistTaskAsToday(taskId, formattedDate) {
   const myHeaders = new Headers();
   myHeaders.append("Authorization", todoistAccessToken);
   myHeaders.append("Content-Type", "application/json");
 
-  const today = await getFormattedTodaysDate();
   const body = {
-    due_string: `${today}, Everyday`,
+    due_string: `${formattedDate}, Everyday`,
   };
   const requestOptions = {
     method: "POST",
@@ -251,22 +262,27 @@ async function markLeetCodeDailyTaskDone() {
   if (isLateNight()) {
     const responseBody = await markDueDateOfTodoistTaskAsToday(
       todoistLeetcodeTask.id,
+      await getFormattedTodaysDate(),
     );
     console.log(responseBody);
   } else {
-    const responseBody = await markTodoistTaskAsCompleted(
+    // const responseBody = await markTodoistTaskAsCompleted(
+    //   todoistLeetcodeTask.id,
+    // );
+    // const responseStatus = responseBody.status;
+    // if (responseStatus === 204) {
+    //   console.log("Updation Successful");
+    // } else if (responseStatus === 400) {
+    //   console.log("Error Occured from TodoIst");
+    //   console.error(responseStatus);
+    // } else {
+    //   console.log("Case Misunderstood");
+    //   console.log(responseBody);
+    // }
+    const responseBody = await markDueDateOfTodoistTaskAsToday(
       todoistLeetcodeTask.id,
+      await getFormattedTomorrowsDate(),
     );
-    const responseStatus = responseBody.status;
-    if (responseStatus === 204) {
-      console.log("Updation Successful");
-    } else if (responseStatus === 400) {
-      console.log("Error Occured from TodoIst");
-      console.error(responseStatus);
-    } else {
-      console.log("Case Misunderstood");
-      console.log(responseBody);
-    }
   }
 }
 
