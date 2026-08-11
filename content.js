@@ -409,6 +409,7 @@ async function getLastSubmission() {
 async function isLeetCodeQuestionDone() {
   const dailyQuestionDetails = await getDailyQuestionDetails();
   let lastSubmission = await getLastSubmission();
+  console.log(lastSubmission);
   lastSubmission = lastSubmission.recentSubmissionList[0];
   console.log("Last Submission Status:", lastSubmission.statusDisplay);
 
