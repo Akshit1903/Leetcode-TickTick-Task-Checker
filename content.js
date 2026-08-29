@@ -421,7 +421,9 @@ async function isLeetCodeQuestionDone() {
 }
 
 let triggerWorkflow = async (message, sender, sendResponse) => {
-  console.log("🚀 LeetCode submit button clicked!");
+  console.log("🚀 LeetCode submit button clicked, waiting for 3 seconds!");
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+  console.log("Proceeding...");
   if (await isLeetCodeQuestionDone()) {
     console.log("Question accepted, marking today as done");
     await markLeetCodeDailyTaskDone();
